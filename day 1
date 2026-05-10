@@ -1,0 +1,24 @@
+#What is SQL injection (SQLi)?
+Iske jariye attackers app ya web ke data ko manupulate karke aise data dekh skte hai jo normal users ko visible na ho aur kabki kabhi admin ya kisi aur ke acc se bhi login kr skte hai
+
+#How to detect SQL injection vulnerabilities?
+' ya OR 1=1 daal ke error/response check kar skte hai.
+Time delay payload → slow response dekho.
+OAST payload → network interaction dekho.
+Fast method → Burp Scanner use karo.
+
+#SQL injection in different parts of the query
+ WHERE clause – sabse common.
+UPDATE – updated values ya WHERE clause.
+INSERT – inserted values.
+SELECT – table/column name ya ORDER BY clause.
+
+#Retrieving hidden data
+URL: ...?category=Gifts → Query: SELECT * FROM products WHERE category='Gifts' AND released=1
+released=1 → hides unreleased products (released=0)
+SQLi se hidden products bhi access kiye ja sakte hain.
+  ...?category=Gifts'-- → -- se AND released=1 ignore ho jata hai → unreleased products bhi show ho jate hain.
+...?category=Gifts'+OR+1=1-- → OR 1=1 se saare products show ho jate hain, chahe category koi bhi ho.
+Warning: OR 1=1 dangerous ho sakta hai agar same input UPDATE/DELETE me use ho → data loss.
+IMPORTANT Payloads: '-- aur OR 1=1--
+
