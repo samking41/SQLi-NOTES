@@ -22,3 +22,10 @@ SQLi se hidden products bhi access kiye ja sakte hain.
 Warning: OR 1=1 dangerous ho sakta hai agar same input UPDATE/DELETE me use ho → data loss.
 IMPORTANT Payloads: '-- aur OR 1=1--
 
+PORTSWIGGER SQLi LAB-1 Learning path
+Mujhe jyda hard lga nahi ya lab simple tha maine lab khola us link ko burpsuit se intercept kara maine aur fir use repeter mai transfer kr diya
+fir wha pe maine catogry accesory mai tha maine usme request ko modify kra maine use do trh se solve krne ka kosis kra pahla payload maine dala '-- aur ise ho bhi gya
+aur dusra payload maine dala '+OR+1=1'-- ise bhi ho gya to simple hi tha
+PAYLOAD:- '-- or '+OR+1=1--
+ISME 1=1 hamesha truse hota hai aur -- iske use se hamlog iske bad ke quary ko ignore kr skte hai
+
