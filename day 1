@@ -29,3 +29,8 @@ aur dusra payload maine dala '+OR+1=1'-- ise bhi ho gya to simple hi tha
 PAYLOAD:- '-- or '+OR+1=1--
 ISME 1=1 hamesha truse hota hai aur -- iske use se hamlog iske bad ke quary ko ignore kr skte hai
 
+PORTSWIGGER SQLi LAB-2 Learning path
+ya lab bhi simple hi tha main pahle web mai gya accounts mai gya wha se uske bad burpsuite se intersecpt kra fir wha login mai jake maine kuch bhi dal diya aur yha burp suit se username section mai
+administrator'-- kar diya ya fir adminstrator'+OR+1=1 bhi kr skte the
+Payloads used:- '--   '+OR+1=1
+
